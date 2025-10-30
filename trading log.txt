@@ -1,0 +1,17 @@
+FOREX: 
+======
+
+Trading pairs: 
+
+# Pair      Core Theme
+===========================================
+1 EUR/USD   Global Benchmark
+2 USD/JPY   Safe Haven Flow
+3 GBP/USD   UK vs US Policy
+4 AUD/JPY   Risk-On / Commodity (Non-USD)
+5 USD/CAD   Oil vs US Rates
+6 EUR/GBP   Regional Rate Divergence
+7 CAD/JPY   Commodity vs Safe-Haven
+8 EUR/AUD   Eurozone vs Commodity Bloc
+
+

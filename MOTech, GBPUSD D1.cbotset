@@ -1,0 +1,14 @@
+﻿  {
+    "Chart": { "Symbol": "GBPUSD", "Period": "d1" },
+    "Parameters": {
+      "RiskPercent": 1.0,
+      "SlAtrMultiplier": 2.0,
+      "TpAtrMultiplier": 4.0,
+      "PyramidingDistancePips": 170.0,
+      "UseTrailing": true,
+      "TrailingAtrMultiplier": 1.4,
+      "TrailingStepPips": 60.0,
+      "BreakEvenAtrMultiplier": 1.1,
+      "PartialTpPercent": 50.0
+    }
+  }

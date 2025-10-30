@@ -1,0 +1,14 @@
+﻿  {
+    "Chart": { "Symbol": "EURGBP", "Period": "d1" },
+    "Parameters": {
+      "RiskPercent": 1.0,
+      "SlAtrMultiplier": 2.0,
+      "TpAtrMultiplier": 4.0,
+      "PyramidingDistancePips": 120.0,
+      "UseTrailing": true,
+      "TrailingAtrMultiplier": 1.2,
+      "TrailingStepPips": 40.0,
+      "BreakEvenAtrMultiplier": 1.0,
+      "PartialTpPercent": 50.0
+    }
+  }

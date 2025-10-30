@@ -1,0 +1,14 @@
+﻿  {
+    "Chart": { "Symbol": "AUDJPY", "Period": "d1" },
+    "Parameters": {
+      "RiskPercent": 1.0,
+      "SlAtrMultiplier": 2.0,
+      "TpAtrMultiplier": 4.0,
+      "PyramidingDistancePips": 180.0,
+      "UseTrailing": true,
+      "TrailingAtrMultiplier": 1.6,
+      "TrailingStepPips": 80.0,
+      "BreakEvenAtrMultiplier": 1.3,
+      "PartialTpPercent": 50.0
+    }
+  }
