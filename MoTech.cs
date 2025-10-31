@@ -51,6 +51,9 @@ namespace cAlgo.Robots
         [Parameter("TP Trail ATR Multiplier", DefaultValue = 2.0)]
         public double TpTrailAtrMultiplier { get; set; }
 
+        [Parameter("Trail Steps Together", DefaultValue = true)]
+        public bool TrailStepsTogether { get; set; }
+
         // === Constants ===
         private const string BotLabel = "MOTechBot_";
         private const int HigherTfEmaPeriod = 50;
@@ -599,13 +602,17 @@ namespace cAlgo.Robots
             {
                 var pos = prevStep.Position;
                 
-                // Lock the immediately previous step at new entry price
-                if (prevStep.Step == currentStep - 1)
+                // Lock ALL previous steps at new entry price (they'll unlock when new step reaches BE)
+                double lockPrice = newEntryPrice;
+                lockPrice = Math.Round(lockPrice / Symbol.TickSize) * Symbol.TickSize;
+                
+                // Only modify if this improves the current SL
+                bool shouldLock = tradeType == TradeType.Buy
+                    ? pos.StopLoss.HasValue && lockPrice > pos.StopLoss.Value
+                    : pos.StopLoss.HasValue && lockPrice < pos.StopLoss.Value;
+                
+                if (shouldLock)
                 {
-                    double lockPrice = newEntryPrice;
-                    lockPrice = Math.Round(lockPrice / Symbol.TickSize) * Symbol.TickSize;
-                    
-                    // Move SL to new entry price (lock it)
                     var result = pos.ModifyStopLossPrice(lockPrice);
                     if (result.IsSuccessful)
                     {
@@ -691,15 +698,51 @@ namespace cAlgo.Robots
                                 restored.LastTrailingSL = bePrice;
                                 Print("[BREAK-EVEN] Step {0} moved to BE @ {1:F5} (Profit: {2:F1} pips)", 
                                       restored.Step, bePrice, pipsInProfit);
+                                
+                                // UNLOCK LOWER STEPS when this step reaches BE
+                                UnlockLowerSteps(positions, restored.Step, tradeType);
                             }
                         }
                     }
                 }
             }
             
-            // Step 2: Trail unlocked positions (only those not locked by a higher pyramid step)
+            // Step 2: Trail positions based on strategy
             if (!UseTrailing) return;
             
+            if (TrailStepsTogether)
+            {
+                // NEW: Trail all unlocked steps together at the same level
+                TrailStepsTogetherAtSameLevel(positions, tradeType, atrVal, minDistance);
+            }
+            else
+            {
+                // OLD: Trail each step independently (locked steps stay locked forever)
+                TrailStepsIndependently(positions, tradeType, atrVal, minDistance);
+            }
+        }
+
+        private void UnlockLowerSteps(List<RestoredPosition> positions, int stepThatReachedBE, TradeType tradeType)
+        {
+            // When a step reaches BE, unlock all steps below it (that were locked at this step's entry)
+            var lowerSteps = positions.Where(p => p.Step < stepThatReachedBE && p.IsLocked).ToList();
+            
+            foreach (var lower in lowerSteps)
+            {
+                // Check if this step was locked by the step that just reached BE
+                var stepAbove = positions.FirstOrDefault(p => p.Step == stepThatReachedBE);
+                
+                if (stepAbove != null && Math.Abs(lower.LockedAtPrice - stepAbove.Position.EntryPrice) < Symbol.PipSize * 0.1)
+                {
+                    lower.IsLocked = false;
+                    Print("[UNLOCK] Step {0} unlocked - Step {1} reached BE", lower.Step, stepThatReachedBE);
+                }
+            }
+        }
+
+        private void TrailStepsTogetherAtSameLevel(List<RestoredPosition> positions, TradeType tradeType, 
+                                                     double atrVal, double minDistance)
+        {
             // Calculate trailing price for the group
             double trailPrice = tradeType == TradeType.Buy
                 ? Bars.HighPrices.LastValue - atrVal * TrailingAtrMultiplier
@@ -707,37 +750,82 @@ namespace cAlgo.Robots
             
             trailPrice = Math.Round(trailPrice / Symbol.TickSize) * Symbol.TickSize;
             
-            // Trail all unlocked positions together
+            // Find all positions that can trail (BE applied and not locked)
+            var trailablePositions = positions
+                .Where(p => p.BreakEvenApplied && !p.IsLocked && p.Position.StopLoss.HasValue)
+                .ToList();
+            
+            if (!trailablePositions.Any()) return;
+            
+            // Check if ANY position can trail (use the most restrictive one as reference)
+            var referencePosition = trailablePositions.OrderBy(p => p.LastTrailingSL).First();
+            
+            bool canTrail = tradeType == TradeType.Buy
+                ? trailPrice > referencePosition.LastTrailingSL + minDistance
+                : trailPrice < referencePosition.LastTrailingSL - minDistance;
+            
+            // If we can trail, move ALL unlocked positions to the same level
+            if (canTrail)
+            {
+                foreach (var restored in trailablePositions)
+                {
+                    var pos = restored.Position;
+                    
+                    var result = pos.ModifyStopLossPrice(trailPrice);
+                    if (result.IsSuccessful)
+                    {
+                        restored.LastTrailingSL = trailPrice;
+                        Print("[TRAILING-CONVOY] Step {0} SL moved to {1:F5} (trailing together)", 
+                              restored.Step, trailPrice);
+                    }
+                }
+                
+                // Also move locked positions to the same trail level (keep them synchronized)
+                var lockedPositions = positions.Where(p => p.IsLocked && p.Position.StopLoss.HasValue).ToList();
+                
+                foreach (var locked in lockedPositions)
+                {
+                    // Only move locked positions if trail price is better than their locked price
+                    bool shouldMoveLocked = tradeType == TradeType.Buy
+                        ? trailPrice > locked.LockedAtPrice
+                        : trailPrice < locked.LockedAtPrice;
+                    
+                    if (shouldMoveLocked)
+                    {
+                        var result = locked.Position.ModifyStopLossPrice(trailPrice);
+                        if (result.IsSuccessful)
+                        {
+                            locked.LockedAtPrice = trailPrice;
+                            locked.LastTrailingSL = trailPrice;
+                            Print("[TRAILING-LOCKED] Step {0} SL moved to {1:F5} (following convoy)", 
+                                  locked.Step, trailPrice);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void TrailStepsIndependently(List<RestoredPosition> positions, TradeType tradeType, 
+                                              double atrVal, double minDistance)
+        {
+            // OLD LOGIC: Trail unlocked positions independently, locked positions stay locked forever
+            double trailPrice = tradeType == TradeType.Buy
+                ? Bars.HighPrices.LastValue - atrVal * TrailingAtrMultiplier
+                : Bars.LowPrices.LastValue + atrVal * TrailingAtrMultiplier;
+            
+            trailPrice = Math.Round(trailPrice / Symbol.TickSize) * Symbol.TickSize;
+            
             foreach (var restored in positions)
             {
                 var pos = restored.Position;
                 
-                // Skip if locked or BE not applied or no SL
+                // Skip if locked, BE not applied, or no SL
                 if (restored.IsLocked || !restored.BreakEvenApplied || !pos.StopLoss.HasValue)
                     continue;
                 
-                // Check if we can trail
                 bool canTrail = tradeType == TradeType.Buy
                     ? trailPrice > restored.LastTrailingSL + minDistance
                     : trailPrice < restored.LastTrailingSL - minDistance;
-                
-                // Ensure we don't trail below entry of higher steps
-                if (canTrail)
-                {
-                    var higherSteps = positions.Where(p => p.Step > restored.Step).ToList();
-                    if (higherSteps.Any())
-                    {
-                        double highestEntry = tradeType == TradeType.Buy
-                            ? higherSteps.Max(p => p.Position.EntryPrice)
-                            : higherSteps.Min(p => p.Position.EntryPrice);
-                        
-                        // Don't trail past higher step entries
-                        if (tradeType == TradeType.Buy && trailPrice > highestEntry)
-                            trailPrice = highestEntry;
-                        else if (tradeType == TradeType.Sell && trailPrice < highestEntry)
-                            trailPrice = highestEntry;
-                    }
-                }
                 
                 if (canTrail)
                 {
