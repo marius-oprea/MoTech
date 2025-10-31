@@ -2,13 +2,17 @@
     "Chart": { "Symbol": "USDCAD", "Period": "d1" },
     "Parameters": {
       "RiskPercent": 1.0,
-      "SlAtrMultiplier": 2.0,
-      "TpAtrMultiplier": 4.0,
-      "PyramidingDistancePips": 80.0,
+      "SlAtrMultiplier": 1.9,
+      "TpAtrMultiplier": 3.8,
+      "PyramidingDistancePips": 100.0,
       "UseTrailing": true,
-      "TrailingAtrMultiplier": 1.5,
-      "TrailingStepPips": 40.0,
-      "BreakEvenAtrMultiplier": 1.2,
-      "PartialTpPercent": 50.0
+      "TrailingAtrMultiplier": 1.35,
+      "TrailingStepPips": 45.0,
+      "BreakEvenAtrMultiplier": 1.1,
+      "PartialTpPercent": 55.0,
+      "RemoveTpAfterPyramid": true,
+      "TrailTpOnBarClose": false,
+      "TpTrailAtrMultiplier": 1.9,
+      "TrailStepsTogether": true
     }
   }

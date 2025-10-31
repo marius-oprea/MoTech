@@ -6,9 +6,13 @@
       "TpAtrMultiplier": 4.0,
       "PyramidingDistancePips": 150.0,
       "UseTrailing": true,
-      "TrailingAtrMultiplier": 1.5,
-      "TrailingStepPips": 50.0,
+      "TrailingAtrMultiplier": 1.45,
+      "TrailingStepPips": 55.0,
       "BreakEvenAtrMultiplier": 1.2,
-      "PartialTpPercent": 50.0
+      "PartialTpPercent": 50.0,
+      "RemoveTpAfterPyramid": true,
+      "TrailTpOnBarClose": false,
+      "TpTrailAtrMultiplier": 2.0,
+      "TrailStepsTogether": true
     }
   }

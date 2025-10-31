@@ -18,14 +18,11 @@ namespace cAlgo.Robots
         [Parameter("ATR Multiplier (SL)", DefaultValue = 1.5)]
         public double SlAtrMultiplier { get; set; }
 
-        [Parameter("ATR Multiplier (TP1)", DefaultValue = 2.5)]
+        [Parameter("ATR Multiplier (TP)", DefaultValue = 2.5)]
         public double TpAtrMultiplier { get; set; }
 
         [Parameter("Pyramiding Distance (pips)", DefaultValue = 120)]
         public double PyramidingDistancePips { get; set; }
-
-        [Parameter("Max Pyramid Steps", DefaultValue = 3)]
-        public int MaxPyramidSteps { get; set; }
 
         [Parameter("Enable Trailing Stop", DefaultValue = true)]
         public bool UseTrailing { get; set; }
@@ -398,14 +395,7 @@ namespace cAlgo.Robots
                 .ToList();
             
             int stepNumber = pyramidPositions.Count;
-            
-            // Check if we've reached maximum pyramid steps
-            if (stepNumber >= MaxPyramidSteps)
-            {
-                Print("[SKIP] Max pyramid steps ({0}) reached for {1}.", MaxPyramidSteps, tradeType);
-                return;
-            }
-            
+                        
             // If pyramiding, check conditions
             if (stepNumber > 0)
             {
@@ -1068,13 +1058,13 @@ namespace cAlgo.Robots
 
             string Check(bool cond) => cond ? "☑️" : "⬜";
 
-            string buyConditions = $"{Check(currentTfBullish)} CTF↑, {Check(higherTfBullish)} HTF↑, " +
-                                   $"{Check(touchedEmaShort)} EMA21, {Check(rsiVal > 50)} RSI({rsiVal:F1}), " +
-                                   $"{Check(macdHist > 0)} MACD({macdHist:F4})";
+            string buyConditions = $"{Check(currentTfBullish)} CTF ↑ bull, {Check(higherTfBullish)} HTF ↑ bull, " +
+                                   $"{Check(touchedEmaShort)} EMA21, {Check(rsiVal > 50)} RSI({rsiVal:F1} > 50), " +
+                                   $"{Check(macdHist > 0)} MACD({macdHist:F4} > 0)";
             
-            string sellConditions = $"{Check(currentTfBearish)} CTF↓, {Check(higherTfBearish)} HTF↓, " +
-                                    $"{Check(touchedEmaShort)} EMA21, {Check(rsiVal < 50)} RSI({rsiVal:F1}), " +
-                                    $"{Check(macdHist < 0)} MACD({macdHist:F4})";
+            string sellConditions = $"{Check(currentTfBearish)} CTF ↓ bear, {Check(higherTfBearish)} HTF ↓ bear, " +
+                                    $"{Check(touchedEmaShort)} EMA21, {Check(rsiVal < 50)} RSI({rsiVal:F1}) < 50, " +
+                                    $"{Check(macdHist < 0)} MACD({macdHist:F4} < 0)";
 
             Print($"[{source.ToUpper()}] {Symbol.Name} {Server.Time:dd-MMM-yyyy} | CTF:{TimeFrame} HTF:{higherTimeframe} | {entry} | " +
                   $"BUY:[{buyConditions}] | SELL:[{sellConditions}] | Close:{close:F5}");

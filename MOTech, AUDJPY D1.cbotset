@@ -2,13 +2,17 @@
     "Chart": { "Symbol": "AUDJPY", "Period": "d1" },
     "Parameters": {
       "RiskPercent": 1.0,
-      "SlAtrMultiplier": 2.0,
-      "TpAtrMultiplier": 4.0,
-      "PyramidingDistancePips": 180.0,
+      "SlAtrMultiplier": 2.1,
+      "TpAtrMultiplier": 4.2,
+      "PyramidingDistancePips": 190.0,
       "UseTrailing": true,
-      "TrailingAtrMultiplier": 1.6,
-      "TrailingStepPips": 80.0,
-      "BreakEvenAtrMultiplier": 1.3,
-      "PartialTpPercent": 50.0
+      "TrailingAtrMultiplier": 1.7,
+      "TrailingStepPips": 85.0,
+      "BreakEvenAtrMultiplier": 1.35,
+      "PartialTpPercent": 45.0,
+      "RemoveTpAfterPyramid": true,
+      "TrailTpOnBarClose": false,
+      "TpTrailAtrMultiplier": 2.2,
+      "TrailStepsTogether": true
     }
   }

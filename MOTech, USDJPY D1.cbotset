@@ -4,11 +4,15 @@
       "RiskPercent": 1.0,
       "SlAtrMultiplier": 2.0,
       "TpAtrMultiplier": 4.0,
-      "PyramidingDistancePips": 180.0,
+      "PyramidingDistancePips": 185.0,
       "UseTrailing": true,
       "TrailingAtrMultiplier": 1.6,
-      "TrailingStepPips": 100.0,
+      "TrailingStepPips": 95.0,
       "BreakEvenAtrMultiplier": 1.3,
-      "PartialTpPercent": 50.0
+      "PartialTpPercent": 50.0,
+      "RemoveTpAfterPyramid": true,
+      "TrailTpOnBarClose": false,
+      "TpTrailAtrMultiplier": 2.0,
+      "TrailStepsTogether": true
     }
   }

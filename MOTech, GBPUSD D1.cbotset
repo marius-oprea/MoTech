@@ -2,13 +2,17 @@
     "Chart": { "Symbol": "GBPUSD", "Period": "d1" },
     "Parameters": {
       "RiskPercent": 1.0,
-      "SlAtrMultiplier": 2.0,
-      "TpAtrMultiplier": 4.0,
-      "PyramidingDistancePips": 170.0,
+      "SlAtrMultiplier": 2.1,
+      "TpAtrMultiplier": 4.2,
+      "PyramidingDistancePips": 175.0,
       "UseTrailing": true,
-      "TrailingAtrMultiplier": 1.4,
-      "TrailingStepPips": 60.0,
-      "BreakEvenAtrMultiplier": 1.1,
-      "PartialTpPercent": 50.0
+      "TrailingAtrMultiplier": 1.5,
+      "TrailingStepPips": 65.0,
+      "BreakEvenAtrMultiplier": 1.15,
+      "PartialTpPercent": 50.0,
+      "RemoveTpAfterPyramid": true,
+      "TrailTpOnBarClose": false,
+      "TpTrailAtrMultiplier": 2.1,
+      "TrailStepsTogether": true
     }
   }
